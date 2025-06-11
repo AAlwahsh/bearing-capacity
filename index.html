@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة قدرة تحمل التربة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f9fafb; }
+        .container { max-width: 900px; }
+        .card { background-color: white; padding: 1.5rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); margin-bottom: 2rem; }
+        .card-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .card-header h2 { font-size: 1.5rem; font-weight: 700; color: #1f2937; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; font-size: 0.875rem; }
+        .input-group input, .input-group select { width: 100%; padding: 0.625rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); }
+        .btn { padding: 0.75rem 1.75rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; }
+        .btn-primary { background-color: #8b5cf6; color: white; } .btn-primary:hover { background-color: #7c3aed; }
+        .btn-secondary { background-color: #6b7280; color: white; } .btn-secondary:hover { background-color: #4b5563; }
+        .btn-link { background-color: transparent; color: #8b5cf6; font-weight: bold; } .btn-link:hover { color: #7c3aed; }
+        .btn-example { background-color: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; padding: 0.5rem 1rem; font-size: 0.875rem; } .btn-example:hover { background-color: #e5e7eb; }
+        .results-section h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #1f2937; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .results-table th, .results-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: center; font-size: 0.875rem; }
+        .results-table th { background-color: #f9fafb; font-weight: 600; color: #4b5563; }
+        .results-table td.label { font-weight: 600; color: #374151; text-align: right; }
+        .status-safe { color: #10b981 !important; font-weight: 700; }
+        .status-unsafe { color: #ef4444 !important; font-weight: 700; }
+        .error-message { color: #ef4444; background-color: #fee2e2; border: 1px solid #fca5a5; padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem; text-align: center;}
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; transition: opacity 0.3s ease; }
+        .modal-container { background-color: white; padding: 0; border-radius: 0.75rem; width: 95%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-body { padding: 1.5rem 2rem; overflow-y: auto; line-height: 1.8; }
+        .modal-body h4 { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-body h5 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .modal-body p { margin-bottom: 1rem; color: #4b5563; }
+        .modal-body ul { list-style-type: disc; padding-right: 2rem; margin-bottom: 1rem; }
+        .modal-body li { margin-bottom: 0.5rem; }
+        .modal-tabs { display: flex; border-bottom: 1px solid #e5e7eb; padding: 0 1.5rem; }
+        .modal-tab { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: #6b7280; margin-bottom: -1px; }
+        .modal-tab.active { color: #8b5cf6; border-bottom-color: #8b5cf6; }
+        .equation { font-family: 'Courier New', Courier, monospace; background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; text-align: left; direction: ltr; font-size: 1rem; white-space: pre-wrap; word-wrap: break-word; border: 1px solid #e5e7eb; }
+        .modal-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+        .modal-table th, .modal-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: right; }
+        .modal-table th { background-color: #f9fafb; font-weight: 600; }
+        .modal-table td:first-child { font-weight: 600; color: #374151; text-align: center; direction: ltr; }
+
+        .hidden { display: none; }
+        @media print {
+            body, .card { background-color: white; }
+            body * { visibility: hidden; }
+            #resultsArea, #resultsArea * { visibility: visible; }
+            #resultsArea { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 10px; border: none; box-shadow: none; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-4 sm:p-6">
+        <div class="card no-print">
+            <div class="card-header text-center">
+                <h2>حاسبة قدرة تحمل التربة</h2>
+            </div>
+            
+            <form id="bearingCapacityForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
+                 <div class="lg:col-span-3 mb-4">
+                    <h3 class="text-md font-semibold text-gray-800 mb-3">أمثلة جاهزة (Das)</h3>
+                    <div class="flex space-x-4 space-x-reverse border-b border-gray-200 pb-6">
+                        <button type="button" id="example1Btn" class="btn btn-example">تعبئة مثال 6.1</button>
+                        <button type="button" id="example2Btn" class="btn btn-example">تعبئة مثال 6.6</button>
+                    </div>
+                </div>
+                <div class="input-group lg:col-span-3"><label for="foundation_type">نوع الأساس:</label><select id="foundation_type"><option value="strip">شريطي (Strip)</option><option value="rectangular">مستطيل</option><option value="square">مربع</option><option value="circular">دائري</option></select></div>
+                <div class="input-group"><label for="B" id="label_B">العرض (B) (متر):</label><input type="number" id="B" step="any"></div>
+                <div class="input-group hidden" id="group_L"><label for="L" id="label_L">الطول (L) (متر):</label><input type="number" id="L" step="any"></div>
+                <div class="input-group"><label for="D_foundation">عمق التأسيس (D<sub>f</sub>، متر):</label><input type="number" id="D_foundation" step="any" min="0"></div>
+                <div class="input-group"><label for="phi_deg">زاوية الاحتكاك (φ، درجات):</label><input type="number" id="phi_deg" step="any" min="0" max="90"></div>
+                <div class="input-group"><label for="c">التماسك (c، kN/m²):</label><input type="number" id="c" step="any" min="0"></div>
+                <div class="input-group">
+                    <label for="gamma_above">الوزن النوعي أعلى الأساس (γ₁، kN/m³):</label>
+                    <input type="number" id="gamma_above" step="any" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="gamma_below">الوزن النوعي أسفل الأساس (γ₂، kN/m³):</label>
+                    <input type="number" id="gamma_below" step="any" min="0">
+                </div>
+                <div class="input-group"><label for="Q_applied">الحمل المطبق (q<sub>app</sub>، kN/m²):</label><input type="number" id="Q_applied" step="any" min="0"></div>
+                <div class="input-group"><label for="GWT_depth">عمق المياه (D<sub>w</sub>، متر, -1 إذا لا تأثير):</label><input type="number" id="GWT_depth" step="any"></div>
+                
+                <div class="lg:col-span-3 toggle-section">
+                     <div class="flex items-center mb-4"><input id="advancedLoading" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 ml-2"><label for="advancedLoading" class="font-semibold text-gray-900">شروط التحميل المتقدمة (اللامركزية والميلان)</label></div>
+                    <div id="advanced_loading_inputs" class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 hidden">
+                       <div class="input-group"><label for="eB">اللامركزية e<sub>B</sub> (متر):</label><input type="number" id="eB" step="any" value="0"></div>
+                       <div class="input-group"><label for="eL">اللامركزية e<sub>L</sub> (متر):</label><input type="number" id="eL" step="any" value="0"></div>
+                       <div class="input-group"><label for="beta">زاوية ميل الحمل β (درجات):</label><input type="number" id="beta" step="any" value="0"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 toggle-section pt-4">
+                     <div class="flex items-center mb-4"><input id="considerCompressibility" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 ml-2"><label for="considerCompressibility" class="font-semibold text-gray-900">حساب تأثير الانضغاطية (Das/Vesic)</label></div>
+                    <div id="compressibility_inputs" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 hidden">
+                        <div class="input-group"><label for="Es">معامل المرونة (Es، kN/m²):</label><input type="number" id="Es" step="any"></div>
+                        <div class="input-group"><label for="mu_s">نسبة بواسون (μs):</label><input type="number" id="mu_s" step="any"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 flex justify-center items-center pt-4 space-x-4 space-x-reverse">
+                    <button type="submit" class="btn btn-primary">احسب قدرة التحمل</button>
+                    <button type="button" id="assumptionsBtn" class="btn btn-link">المنهجية والمعلومات</button>
+                    <button type="button" id="printReportBtn" class="btn btn-secondary" style="display: none;">طباعة التقرير</button>
+                </div>
+            </form>
+            <footer class="text-center text-gray-500 text-xs mt-8 pt-4 border-t">
+                <p>جميع الحقوق محفوظة © أحمد الوحش 2025</p>
+                <p>نرحب بملاحظاتكم: <a href="mailto:aalwahsh87@gmail.com" class="text-purple-600 hover:underline">aalwahsh87@gmail.com</a></p>
+            </footer>
+        </div>
+
+        <div id="resultsArea" class="card" style="display: none;"></div>
+    </div>
+
+    <!-- Modal with 3 tabs and corrected content -->
+    <div id="infoModal" class="modal-overlay hidden no-print">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold text-gray-800">المنهجية والمعلومات</h2>
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" data-tab="methodology">المنهجية والافتراضات</button>
+                <button class="modal-tab" data-tab="equations">المعادلات وخطوات الحساب</button>
+                <button class="modal-tab" data-tab="disclaimer">إخلاء المسؤولية</button>
+            </div>
+            <div class="modal-body">
+                <!-- Methodology Content -->
+                <div id="methodologyContent" class="modal-content">
+                    <h4>المنهجية العامة</h4>
+                    <p>
+                        تعتمد هذه الحاسبة على <strong>معادلة قدرة التحمل العامة (General Bearing Capacity Equation)</strong>. هذه المعادلة هي نسخة معدلة وموسعة من معادلة Terzaghi الكلاسيكية، وتوفر نتائج أكثر دقة من خلال إدخال مجموعة من معاملات التصحيح التي تأخذ في الاعتبار الظروف الواقعية المختلفة.
+                    </p>
+                    <h5>المراجع الرئيسية للمعادلات المستخدمة:</h5>
+                    <ul>
+                        <li><strong>Vesic (1973, 1975):</strong> لمعاملات قدرة التحمل (N<sub>c</sub>, N<sub>q</sub>, N<sub>γ</sub>)، ومعاملات الانضغاطية.</li>
+                        <li><strong>Hansen (1970):</strong> لمعاملات العمق (F<sub>cd</sub>, F<sub>qd</sub>).</li>
+                        <li><strong>De Beer (1970) / Meyerhof (1963):</strong> لمعاملات الشكل (F<sub>cs</sub>, F<sub>qs</sub>, F<sub>γs</sub>).</li>
+                    </ul>
+
+                    <h4>الافتراضات الأساسية</h4>
+                    <ol class="list-decimal pr-5">
+                        <li><strong>نمط الانهيار:</strong> يُفترض أن التربة تتعرض لانهيار القص العام (General Shear Failure).</li>
+                        <li><strong>تجانس التربة:</strong> تُعتبر خصائص التربة (c, φ) ثابتة ومتجانسة أسفل الأساس.</li>
+                        <li><strong>صلابة الأساس:</strong> يُفترض أن الأساس صلب (Rigid) ويتصرف كوحدة واحدة.</li>
+                    </ol>
+                </div>
+                <!-- Equations Content - RESTRUCTURED FOR CLARITY -->
+                <div id="equationsContent" class="modal-content hidden">
+                    <h4>منهجية التدقيق اليدوي للحسابات</h4>
+                    <p>للتحقق من أي نتيجة، اتبع الخطوات التالية بالترتيب:</p>
+                     
+                    <h5>1. المعادلة العامة لقدرة التحمل</h5>
+                    <div class="equation">qult = (c' Nc Fcs Fcd Fci) + (q Nq Fqs Fqd Fqi) + (0.5 γ' B' Nγ Fγs Fγd Fγi)</div>
+
+                    <h5>2. تعريف معاملات التصحيح</h5>
+                    <table class="modal-table">
+                         <thead>
+                            <tr>
+                                <th>الرمز</th>
+                                <th>الوصف</th>
+                             </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>F<sub>cs</sub>, F<sub>qs</sub>, F<sub>γs</sub></td><td>معاملات الشكل، وتعتمد على أبعاد الأساس (B/L).</td></tr>
+                            <tr><td>F<sub>cd</sub>, F<sub>qd</sub>, F<sub>γd</sub></td><td>معاملات العمق، وتعتمد على عمق التأسيس بالنسبة للعرض (Df/B).</td></tr>
+                             <tr><td>F<sub>ci</sub>, F<sub>qi</sub>, F<sub>γi</sub></td><td>معاملات ميلان الحمل، وتعتمد على زاوية ميل الحمل عن المحور الرأسي.</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h5>3. حساب الإجهاد الرأسي الفعال `q` (للحد الثاني)</h5>
+                    <p class="text-gray-600">تعتمد هذه الخطوة على موقع منسوب المياه (Dw) بالنسبة لعمق التأسيس (Df).</p>
+                    <div class="mt-2">
+                        <h5 class="font-semibold text-sm">الحالة أ: المياه أسفل الأساس <span dir="ltr" class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> &ge; D<sub>f</sub>)</span></h5>
+                        <div class="equation text-sm">q = γ₁ × Df</div>
+
+                        <h5 class="font-semibold text-sm mt-4">الحالة ب: المياه أعلى الأساس <span dir="ltr" class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> < D<sub>f</sub>)</span></h5>
+                        <div class="equation text-sm">q = (γ₁ × Dw) + ((γ₁ - 9.81) × (Df - Dw))</div>
+                    </div>
+                    
+                    <h5 class="mt-6">4. حساب الوزن النوعي الفعال `γ'` (للحد الثالث)</h5>
+                    <p class="text-gray-600">تعتمد هذه الخطوة على موقع منسوب المياه (Dw) بالنسبة لمنطقة الانهيار أسفل الأساس (تمتد لعمق Df + B').</p>
+                    <div class="mt-2">
+                         <h5 class="font-semibold text-sm">الحالة أ: المياه عميقة جداً <span dir="ltr" class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> &ge; D<sub>f</sub> + B')</span></h5>
+                         <div class="equation text-sm">γ' = γ₂</div>
+
+                         <h5 class="font-semibold text-sm mt-4">الحالة ب: المياه عند أو فوق منسوب التأسيس <span dir="ltr" class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> &le; D<sub>f</sub>)</span></h5>
+                         <div class="equation text-sm">γ' = γ₂ - 9.81</div>
+
+                         <h5 class="font-semibold text-sm mt-4">الحالة ج: المياه داخل منطقة الانهيار <span dir="ltr" class="font-sans text-gray-500 font-normal ml-2">(D<sub>f</sub> < D<sub>w</sub> < D<sub>f</sub> + B')</span></h5>
+                         <p class="text-gray-600 text-sm">يتم استخدام متوسط خطي (Linear Average) للوزن النوعي.</p>
+                    </div>
+                </div>
+                <!-- Disclaimer Content -->
+                <div id="disclaimerContent" class="modal-content hidden">
+                    <h4>إخلاء المسؤولية</h4>
+                    <div class="border-r-4 border-yellow-500 bg-yellow-50 p-4 rounded-md text-yellow-900">
+                        <p>تم تصميم هذه الحاسبة وتقديمها كأداة للأغراض التعليمية والتقديرية الأولية فقط. لا يجب اعتبار نتائجها بديلاً عن التحليل الهندسي الاحترافي والاستشارة من قبل مهندس جيوتقني مؤهل.</p>
+                        <p>على الرغم من أنه تم بذل كل جهد ممكن لضمان دقة الحسابات بناءً على المراجع والمعادلات الهندسية القياسية، فإن مطور هذه الأداة لا يقدم أي ضمانات، سواء كانت صريحة أو ضمنية، بخصوص صحة أو اكتمال أو ملاءمة النتائج لأي غرض محدد.</p>
+                        <p>يجب على المستخدم التحقق من جميع النتائج بشكل مستقل قبل استخدامها في أي تصميمات هندسية فعلية أو لأغراض التشييد والبناء. يتحمل المستخدم وحده كامل المسؤولية عن أي قرارات أو إجراءات يتم اتخاذها بناءً على المعلومات الصادرة من هذه الأداة. المطور غير مسؤول عن أي أضرار مباشرة أو غير مباشرة قد تنشأ عن استخدام هذه الحاسبة.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const _0x26ce55=_0x2201;(function(_0x5adcbf,_0x16cfab){const _0x62114e=_0x2201,_0x468919=_0x5adcbf();while(!![]){try{const _0x6ea415=-parseInt(_0x62114e(0x1d4))/0x1*(parseInt(_0x62114e(0x21f))/0x2)+-parseInt(_0x62114e(0x1a3))/0x3*(parseInt(_0x62114e(0x1a1))/0x4)+-parseInt(_0x62114e(0x1e6))/0x5+-parseInt(_0x62114e(0x20e))/0x6*(-parseInt(_0x62114e(0x204))/0x7)+-parseInt(_0x62114e(0x1ae))/0x8+parseInt(_0x62114e(0x1cb))/0x9+parseInt(_0x62114e(0x1b4))/0xa;if(_0x6ea415===_0x16cfab)break;else _0x468919['push'](_0x468919['shift']());}catch(_0x86282b){_0x468919['push'](_0x468919['shift']());}}}(_0x5e53,0x56c97));const SAFETY_FACTOR=0x3,GAMMA_WATER=9.81,toRadians=_0x806586=>_0x806586*(Math['PI']/0xb4),form=document[_0x26ce55(0x1cd)](_0x26ce55(0x1c6)),foundationTypeSelect=document[_0x26ce55(0x1cd)](_0x26ce55(0x20d)),labelB=document[_0x26ce55(0x1cd)](_0x26ce55(0x19e)),groupL=document[_0x26ce55(0x1cd)](_0x26ce55(0x208)),inputL=document[_0x26ce55(0x1cd)]('L'),advancedLoadingCheck=document[_0x26ce55(0x1cd)]('advancedLoading'),advancedLoadingInputsDiv=document[_0x26ce55(0x1cd)](_0x26ce55(0x1f4)),considerCompressibilityCheck=document[_0x26ce55(0x1cd)](_0x26ce55(0x22a)),compressibilityInputsDiv=document[_0x26ce55(0x1cd)]('compressibility_inputs'),resultsArea=document[_0x26ce55(0x1cd)](_0x26ce55(0x1df)),assumptionsBtn=document['getElementById']('assumptionsBtn'),modal=document[_0x26ce55(0x1cd)](_0x26ce55(0x1c4)),closeModalBtn=document[_0x26ce55(0x1cd)]('closeModalBtn'),printReportBtn=document[_0x26ce55(0x1cd)]('printReportBtn'),example1Btn=document['getElementById']('example1Btn'),example2Btn=document[_0x26ce55(0x1cd)](_0x26ce55(0x212));function handleFoundationTypeChange(){const _0x307940=_0x26ce55,_0x540b3d=foundationTypeSelect[_0x307940(0x213)];if(_0x540b3d===_0x307940(0x210))labelB[_0x307940(0x19f)]=_0x307940(0x21e),groupL[_0x307940(0x1ce)][_0x307940(0x1d7)](_0x307940(0x1e7)),inputL[_0x307940(0x1dc)]=!![];else{groupL[_0x307940(0x1ce)]['add']('hidden'),inputL[_0x307940(0x1dc)]=![];if(_0x540b3d==='circular')labelB[_0x307940(0x19f)]=_0x307940(0x220);else{if(_0x540b3d===_0x307940(0x219))labelB['textContent']='طول\x20الضلع\x20(B)\x20(متر):';else labelB[_0x307940(0x19f)]=_0x307940(0x21e);}}}function fillForm(_0x529f3d){const _0x3f3e65=_0x26ce55;Object[_0x3f3e65(0x194)](_0x529f3d)[_0x3f3e65(0x1a8)](_0x52366e=>{const _0x3d0733=_0x3f3e65,_0xee9b3b=document[_0x3d0733(0x1cd)](_0x52366e);_0xee9b3b&&(_0xee9b3b[_0x3d0733(0x201)]===_0x3d0733(0x1cf)?(_0xee9b3b[_0x3d0733(0x20c)]=_0x529f3d[_0x52366e],_0xee9b3b[_0x3d0733(0x1a0)](new Event(_0x3d0733(0x206)))):_0xee9b3b[_0x3d0733(0x213)]=_0x529f3d[_0x52366e]);}),foundationTypeSelect['dispatchEvent'](new Event(_0x3f3e65(0x206)));}handleFoundationTypeChange(),foundationTypeSelect['addEventListener'](_0x26ce55(0x206),handleFoundationTypeChange),advancedLoadingCheck[_0x26ce55(0x1c7)](_0x26ce55(0x206),_0x5ecf18=>advancedLoadingInputsDiv[_0x26ce55(0x1ce)][_0x26ce55(0x221)]('hidden',!_0x5ecf18[_0x26ce55(0x1e4)][_0x26ce55(0x20c)])),considerCompressibilityCheck[_0x26ce55(0x1c7)](_0x26ce55(0x206),_0x3756a3=>{const _0x3c1c0f=_0x26ce55;compressibilityInputsDiv[_0x3c1c0f(0x1ce)][_0x3c1c0f(0x221)](_0x3c1c0f(0x1e7),!_0x3756a3[_0x3c1c0f(0x1e4)]['checked']),document[_0x3c1c0f(0x1cd)]('Es')[_0x3c1c0f(0x1dc)]=_0x3756a3[_0x3c1c0f(0x1e4)][_0x3c1c0f(0x20c)],document['getElementById']('mu_s')[_0x3c1c0f(0x1dc)]=_0x3756a3[_0x3c1c0f(0x1e4)][_0x3c1c0f(0x20c)];}),assumptionsBtn[_0x26ce55(0x1c7)](_0x26ce55(0x20b),()=>modal[_0x26ce55(0x1ce)][_0x26ce55(0x1d7)]('hidden')),closeModalBtn['addEventListener']('click',()=>modal[_0x26ce55(0x1ce)]['add'](_0x26ce55(0x1e7))),modal[_0x26ce55(0x1c7)](_0x26ce55(0x20b),_0x361a14=>{const _0x265a53=_0x26ce55;if(_0x361a14[_0x265a53(0x1e4)]===modal)modal[_0x265a53(0x1ce)]['add']('hidden');}),form[_0x26ce55(0x1c7)](_0x26ce55(0x1d2),_0x72baf8=>{_0x72baf8['preventDefault'](),mainAnalysis();}),printReportBtn[_0x26ce55(0x1c7)](_0x26ce55(0x20b),()=>window[_0x26ce55(0x1d5)]()),example1Btn[_0x26ce55(0x1c7)](_0x26ce55(0x20b),()=>{const _0xa37565=_0x26ce55,_0xa4eb73={'foundation_type':_0xa37565(0x1d0),'B':0x2,'D_foundation':1.5,'phi_deg':0x1a,'c':0xa,'gamma_above':0x13,'gamma_below':0x13,'Q_applied':0x0,'GWT_depth':-0x1,'advancedLoading':![],'considerCompressibility':![],'eB':0x0,'eL':0x0,'beta':0x0,'Es':'','mu_s':''};fillForm(_0xa4eb73);}),example2Btn[_0x26ce55(0x1c7)](_0x26ce55(0x20b),()=>{const _0x19d315=_0x26ce55,_0x4f40bc={'foundation_type':_0x19d315(0x210),'B':0.6,'L':1.2,'D_foundation':0.6,'phi_deg':0x19,'c':0x30,'gamma_above':0x12,'gamma_below':0x12,'Q_applied':0x0,'GWT_depth':-0x1,'advancedLoading':![],'considerCompressibility':!![],'eB':0x0,'eL':0x0,'beta':0x0,'Es':0x26c,'mu_s':0.3};fillForm(_0x4f40bc);});const tabs=document[_0x26ce55(0x217)](_0x26ce55(0x1c9)),tabContents=document[_0x26ce55(0x217)](_0x26ce55(0x229));function _0x2201(_0xb1d13,_0x42b635){const _0x5e533d=_0x5e53();return _0x2201=function(_0x2201ff,_0x41603d){_0x2201ff=_0x2201ff-0x193;let _0x247813=_0x5e533d[_0x2201ff];return _0x247813;},_0x2201(_0xb1d13,_0x42b635);}function _0x5e53(){const _0x1318e2=['innerHTML','آمن\x20(SAFE)','عمق\x20المياه','الحمل\x20الأقصى\x20الكلي\x20(Q<sub>ult</sub>)','معامل\x20الأمان\x20(FS)','none','infoModal','q_allowable','bearingCapacityForm','addEventListener','F<sub>qc</sub>','.modal-tab','bg-yellow-100\x20text-yellow-800','3040704hJDsMe','العمق\x20(d)','getElementById','classList','checkbox','strip','Q_applied','submit','I<sub>r(cr)</sub>','91712mjjYto','print','N<sub>q</sub>','remove','status','<tr>','sin','trim','required','max','L_prime','resultsArea','block','Fci','الوزن\x20النوعي\x20أعلى\x20الأساس','تحليل\x20الانضغاطية','target','F_gamma_c','2877335PnxqQI','hidden','data-tab','display','</tbody>','Fqc','F<sub>γc</sub>','المعاملات\x20التصحيحية\x20الأساسية','<td>','التماسك','الحمل\x20المطبق\x20(q<sub>app</sub>)','pow','safetyStatus','<table\x20class=\x22results-table\x22>','advanced_loading_inputs','</td><td>','</table>','phi_deg','inline-block','Irc','A_prime','تحليل\x20اللامركزية\x20والميلان','gamma_above','قدرة\x20التحمل\x20القصوى\x20(q\x27<sub>ult</sub>)','mu_s','includes','معامل\x20المرونة','type','<tbody>','kN/m²','10598eofQRL','<thead><tr>','change','<strong\x20class=\x22text-lg\x22>','group_L','لم\x20يتم\x20تفعيل\x20حساب\x20الانضغاطية.','المعامل','click','checked','foundation_type','642leAYyR','زاوية\x20الاحتكاك','rectangular','النتائج\x20النهائية','example2Btn','value','GWT_depth','<strong>q</strong>','Fcs','querySelectorAll','</th>','square','N<sub>c</sub>','style','F<sub>cc</sub>','q_ultimate','العرض\x20(B)\x20(متر):','10khcQXv','القطر\x20(D\x20أو\x20B)\x20(متر):','toggle','gamma_below','التربة\x20قابلة\x20للانضغاط\x20(Ir\x20=\x20','add','advancedLoading','log10','<span\x20class=\x22','اللامركزية\x20كبيرة\x20جدًا،\x20الأبعاد\x20الفعالة\x20سالبة\x20أو\x20صفرية.','.modal-content','considerCompressibility','<br>','I<sub>r</sub>','Fcc','<strong>γ</strong>','join','atan','</td>','<div\x20class=\x22results-section\x22><h3>','العرض','keys','حقل\x20\x22','map','\x22\x20مطلوب.','حالة\x20الأساس','</tr></thead>','bg-green-100\x20text-green-800','<strong>c</strong>','</td></tr>','Fqd','label_B','textContent','dispatchEvent','4VfTJTZ','toFixed','1087029BHIyWn','D_foundation','الحمل\x20المطبق','tan','Fqi','forEach','exp','beta','<div\x20class=\x22error-message\x22>حدث\x20خطأ:\x20','معاملات\x20قدرة\x20التحمل','F_gamma_d','3883232jNUwsd','الطول','العمق','غير\x20آمن\x20(UNSAFE)','G<sub>s</sub>\x20(kN/m²)','قدرة\x20التحمل\x20المسموح\x20بها\x20(q<sub>all</sub>)','17373990IFiHSQ','الميلان\x20(i)','active','صلابة\x20التربة\x20كافية\x20(Ir\x20=\x20','<div\x20class=\x22p-4\x20text-center\x20font-semibold\x20rounded-md\x20','\x20>=\x20Irc\x20=\x20','</strong>','B_prime','status-safe','status-unsafe'];_0x5e53=function(){return _0x1318e2;};return _0x5e53();}tabs[_0x26ce55(0x1a8)](_0x35cee7=>{const _0x2ef214=_0x26ce55;_0x35cee7[_0x2ef214(0x1c7)](_0x2ef214(0x20b),()=>{const _0x9e1595=_0x2ef214;tabs[_0x9e1595(0x1a8)](_0x22a7dc=>_0x22a7dc[_0x9e1595(0x1ce)][_0x9e1595(0x1d7)](_0x9e1595(0x1b6))),_0x35cee7[_0x9e1595(0x1ce)][_0x9e1595(0x224)](_0x9e1595(0x1b6));const _0x38cb20=_0x35cee7['getAttribute'](_0x9e1595(0x1e8));tabContents[_0x9e1595(0x1a8)](_0x30125a=>{const _0x6fc207=_0x9e1595;_0x30125a['id']===_0x38cb20+'Content'?_0x30125a[_0x6fc207(0x1ce)][_0x6fc207(0x1d7)]('hidden'):_0x30125a['classList'][_0x6fc207(0x224)](_0x6fc207(0x1e7));});});});function validateAndGetInputs(){const _0x37671a=_0x26ce55,_0x44ad86=(_0x113187,_0x4e5d2c,_0x106e07)=>{const _0x509349=_0x2201,_0x2ea892=document['getElementById'](_0x113187),_0x50421d=_0x2ea892[_0x509349(0x213)];if(_0x106e07&&_0x50421d['trim']()==='')throw new Error(_0x509349(0x195)+_0x4e5d2c+_0x509349(0x197));if(_0x50421d[_0x509349(0x1db)]()==='')return 0x0;const _0x2a71be=parseFloat(_0x50421d);if(isNaN(_0x2a71be))throw new Error('قيمة\x20غير\x20صالحة\x20في\x20حقل\x20\x22'+_0x4e5d2c+'\x22.');return _0x2a71be;},_0x4cce20={},_0xb6b118=foundationTypeSelect[_0x37671a(0x213)];return _0x4cce20['foundation_type']=_0xb6b118,_0x4cce20['B']=_0x44ad86('B',_0x37671a(0x193),!![]),_0x4cce20['L']=_0xb6b118===_0x37671a(0x210)?_0x44ad86('L',_0x37671a(0x1af),!![]):_0x4cce20['B'],_0x4cce20['D_foundation']=_0x44ad86('D_foundation',_0x37671a(0x1b0),!![]),_0x4cce20['phi_deg']=_0x44ad86(_0x37671a(0x1f7),_0x37671a(0x20f),!![]),_0x4cce20['c']=_0x44ad86('c',_0x37671a(0x1ef),!![]),_0x4cce20[_0x37671a(0x1fc)]=_0x44ad86('gamma_above',_0x37671a(0x1e2),!![]),_0x4cce20[_0x37671a(0x222)]=_0x44ad86('gamma_below','الوزن\x20النوعي\x20أسفل\x20الأساس',!![]),_0x4cce20['Q_applied']=_0x44ad86(_0x37671a(0x1d1),_0x37671a(0x1a5),!![]),_0x4cce20[_0x37671a(0x214)]=_0x44ad86(_0x37671a(0x214),_0x37671a(0x1c0),!![]),_0x4cce20[_0x37671a(0x225)]=advancedLoadingCheck[_0x37671a(0x20c)],_0x4cce20['eB']=_0x4cce20[_0x37671a(0x225)]?_0x44ad86('eB','eB'):0x0,_0x4cce20['eL']=_0x4cce20[_0x37671a(0x225)]?_0x44ad86('eL','eL'):0x0,_0x4cce20['beta']=_0x4cce20['advancedLoading']?_0x44ad86(_0x37671a(0x1aa),_0x37671a(0x1aa)):0x0,_0x4cce20[_0x37671a(0x22a)]=considerCompressibilityCheck[_0x37671a(0x20c)],_0x4cce20['Es']=_0x4cce20[_0x37671a(0x22a)]?_0x44ad86('Es',_0x37671a(0x200),!![]):null,_0x4cce20[_0x37671a(0x1fe)]=_0x4cce20[_0x37671a(0x22a)]?_0x44ad86('mu_s','نسبة\x20بواسون',!![]):null,_0x4cce20;}function calculateBearingCapacityFactors(_0x4b6f59){const _0x153da1=_0x26ce55,_0x54de7c=toRadians(_0x4b6f59),_0xf73dbe=Math[_0x153da1(0x1a9)](Math['PI']*Math[_0x153da1(0x1a6)](_0x54de7c))*Math[_0x153da1(0x1f1)](Math[_0x153da1(0x1a6)](toRadians(0x2d+_0x4b6f59/0x2)),0x2),_0xa2b8e5=_0x4b6f59===0x0?5.14:(_0xf73dbe-0x1)/Math[_0x153da1(0x1a6)](_0x54de7c),_0x473741=0x2*(_0xf73dbe+0x1)*Math[_0x153da1(0x1a6)](_0x54de7c);return{'Nc':_0xa2b8e5,'Nq':_0xf73dbe,'Ngamma':_0x473741};}function calculateShapeFactors(_0x2a05b0,_0x156dbd,_0x4a1ecb,_0x529c8d,_0x59b96a,_0x2e169f){const _0xf2d2b4=_0x26ce55,_0x47fd2a=_0x2a05b0===_0xf2d2b4(0x1d0)?0x0:_0x156dbd/_0x4a1ecb,_0x4560a9=toRadians(_0x529c8d),_0x4cf54c=Math[_0xf2d2b4(0x1a6)](_0x4560a9),_0x59fa3b=0x1+_0x47fd2a*_0x4cf54c,_0x3927d4=0x1-0.4*_0x47fd2a,_0x37f5d6=_0x59b96a*_0x4cf54c===0x0?0x1:0x1+_0x2e169f/_0x59b96a*_0x47fd2a;return{'Fcs':_0x37f5d6,'Fqs':_0x59fa3b,'F_gamma_s':_0x3927d4};}function calculateDepthFactors(_0x689bf9,_0x2c64c8,_0x1f1e51,_0x5c5964){const _0x49c7c0=_0x26ce55,_0x4dd2a6=_0x689bf9/_0x2c64c8,_0x3bc0ef=0x1,_0x4f7ef8=toRadians(_0x1f1e51);let _0x348754,_0x759a86;if(_0x1f1e51===0x0)_0x759a86=0x1,_0x348754=_0x4dd2a6<=0x1?0x1+0.4*_0x4dd2a6:0x1+0.4*Math[_0x49c7c0(0x230)](_0x4dd2a6);else{const _0x54e9cd=Math[_0x49c7c0(0x1a6)](_0x4f7ef8),_0x187ad1=Math[_0x49c7c0(0x1da)](_0x4f7ef8),_0x22f6f0=0x2*_0x54e9cd*Math[_0x49c7c0(0x1f1)](0x1-_0x187ad1,0x2);_0x759a86=_0x4dd2a6<=0x1?0x1+_0x22f6f0*_0x4dd2a6:0x1+_0x22f6f0*Math[_0x49c7c0(0x230)](_0x4dd2a6),_0x348754=_0x5c5964*_0x54e9cd===0x0?0x1:_0x759a86-(0x1-_0x759a86)/(_0x5c5964*_0x54e9cd);}return{'Fcd':_0x348754,'Fqd':_0x759a86,'F_gamma_d':_0x3bc0ef};}function calculateInclinationFactors(_0x25cb39,_0x32829e){const _0x1f8630=_0x26ce55;if(_0x32829e===0x0)return{'Fci':0x1,'Fqi':0x1,'F_gamma_i':0x1};const _0x4d12e1=Math[_0x1f8630(0x1f1)](0x1-_0x32829e/0x5a,0x2),_0x11d03b=_0x4d12e1,_0x40f9fb=_0x25cb39===0x0?0x1:Math['pow'](0x1-_0x32829e/_0x25cb39,0x2);return{'Fci':_0x11d03b,'Fqi':_0x4d12e1,'F_gamma_i':_0x40f9fb};}function calculateCompressibilityFactors(_0x1815fb,_0x3f6fc8){const _0x2ab912=_0x26ce55;if(!_0x1815fb['Es']||!_0x1815fb['mu_s'])return{'Fcc':0x1,'Fqc':0x1,'F_gamma_c':0x1,'status':_0x2ab912(0x209),'Gs':0x0,'Ir':0x0,'Irc':0x0};const {Es:_0x36a98d,mu_s:_0x14037d,c:_0x3e8682,D_foundation:_0x2d6041,B:_0x235b1c,L:_0x1fdaed,gamma_above:_0x561a70,gamma_below:_0x3321f0,GWT_depth:_0x4c326b,phi_deg:_0x169973}=_0x1815fb,_0x469d9c=toRadians(_0x169973),_0xbe285a=_0x36a98d/(0x2*(0x1+_0x14037d));let _0x452f80;_0x4c326b===-0x1||_0x4c326b>=_0x2d6041?_0x452f80=_0x561a70*_0x2d6041:_0x452f80=_0x4c326b*_0x561a70+(_0x2d6041-_0x4c326b)*(_0x561a70-GAMMA_WATER);const _0x4abc4d=_0x4c326b===-0x1||_0x4c326b>=_0x2d6041+_0x235b1c/0x2?_0x3321f0:_0x3321f0-GAMMA_WATER,_0x51acad=_0x452f80+_0x4abc4d*(_0x235b1c/0x2),_0x34b456=_0xbe285a/(_0x3e8682+_0x51acad*Math[_0x2ab912(0x1a6)](_0x469d9c)),_0x4c4455=_0x235b1c/_0x1fdaed,_0x2760f9=0x1/Math[_0x2ab912(0x1a6)](toRadians(0x2d-_0x169973/0x2)),_0x32f8e2=0.5*Math[_0x2ab912(0x1a9)]((3.3-0.45*_0x4c4455)*_0x2760f9);let _0x2efe31,_0x653fb9,_0x334613,_0x32b2b6;if(_0x34b456>=_0x32f8e2)_0x2efe31=_0x653fb9=_0x334613=0x1,_0x32b2b6=_0x2ab912(0x1b7)+_0x34b456[_0x2ab912(0x1a2)](0x2)+_0x2ab912(0x1b9)+_0x32f8e2[_0x2ab912(0x1a2)](0x2)+').';else{_0x32b2b6=_0x2ab912(0x223)+_0x34b456['toFixed'](0x2)+'\x20<\x20Irc\x20=\x20'+_0x32f8e2[_0x2ab912(0x1a2)](0x2)+').';const _0x2edde3=Math['log10'](0x2*_0x34b456),_0x195ea8=Math[_0x2ab912(0x1da)](_0x469d9c),_0x575379=Math[_0x2ab912(0x1a6)](_0x469d9c),_0x36ac5b=(-4.4+0.6*_0x4c4455)*_0x575379+3.07*_0x195ea8*_0x2edde3/(0x1+_0x195ea8);_0x653fb9=_0x334613=Math['exp'](_0x36ac5b),_0x2efe31=_0x169973===0x0?0.32+0.12*_0x4c4455+0.6*Math[_0x2ab912(0x226)](_0x34b456):_0x653fb9-(0x1-_0x653fb9)/(_0x3f6fc8*_0x575379);}return{'Fcc':_0x2efe31,'Fqc':_0x653fb9,'F_gamma_c':_0x334613,'Ir':_0x34b456,'Irc':_0x32f8e2,'Gs':_0xbe285a,'status':_0x32b2b6};}function mainAnalysis(){const _0x532f27=_0x26ce55;resultsArea['innerHTML']='',resultsArea[_0x532f27(0x21b)][_0x532f27(0x1e9)]=_0x532f27(0x1c3),printReportBtn[_0x532f27(0x21b)][_0x532f27(0x1e9)]=_0x532f27(0x1c3);try{const _0x21889d=validateAndGetInputs(),_0x2af14f=_0x21889d['B']-0x2*_0x21889d['eB'],_0x2e81c9=_0x21889d['L']-0x2*_0x21889d['eL'];if(_0x2af14f<=0x0||_0x2e81c9<=0x0)throw new Error(_0x532f27(0x228));const _0x48aa7b=_0x2af14f*_0x2e81c9,{Nc:_0x1596a5,Nq:_0x47f417,Ngamma:_0x2dcc58}=calculateBearingCapacityFactors(_0x21889d[_0x532f27(0x1f7)]),{Fcs:_0x8f1e4c,Fqs:_0x4e9ee3,F_gamma_s:_0x4bb3d4}=calculateShapeFactors(_0x21889d[_0x532f27(0x20d)],_0x2af14f,_0x2e81c9,_0x21889d[_0x532f27(0x1f7)],_0x1596a5,_0x47f417),{Fcd:_0x2119ac,Fqd:_0x5c2d13,F_gamma_d:_0x5df1c7}=calculateDepthFactors(_0x21889d[_0x532f27(0x1a4)],_0x21889d['B'],_0x21889d[_0x532f27(0x1f7)],_0x1596a5),{Fci:_0x2770ce,Fqi:_0x430769,F_gamma_i:_0x16da2f}=calculateInclinationFactors(_0x21889d[_0x532f27(0x1f7)],_0x21889d['beta']);let _0x6815bf={'Fcc':0x1,'Fqc':0x1,'F_gamma_c':0x1,'status':_0x532f27(0x209),'Gs':0x0,'Ir':0x0,'Irc':0x0};_0x21889d['considerCompressibility']&&(_0x6815bf=calculateCompressibilityFactors(_0x21889d,_0x1596a5));let _0x2ebc60;const _0x4587c8=_0x21889d[_0x532f27(0x1a4)],_0x2fb8bc=_0x21889d[_0x532f27(0x214)],_0x4ec6a5=_0x21889d['gamma_above'],_0x1c590d=_0x21889d['gamma_below'];_0x2fb8bc===-0x1||_0x2fb8bc>=_0x4587c8?_0x2ebc60=_0x4ec6a5*_0x4587c8:_0x2ebc60=_0x2fb8bc*_0x4ec6a5+(_0x4587c8-_0x2fb8bc)*(_0x4ec6a5-GAMMA_WATER);_0x2ebc60=Math[_0x532f27(0x1dd)](0x0,_0x2ebc60);let _0x1e9226;if(_0x2fb8bc===-0x1||_0x2fb8bc>=_0x4587c8+_0x2af14f)_0x1e9226=_0x1c590d;else{if(_0x2fb8bc<=_0x4587c8)_0x1e9226=_0x1c590d-GAMMA_WATER;else{const _0x39170b=((_0x2fb8bc-_0x4587c8)*_0x1c590d+(_0x2af14f-(_0x2fb8bc-_0x4587c8))*(_0x1c590d-GAMMA_WATER))/_0x2af14f;_0x1e9226=_0x39170b;}}_0x1e9226=Math['max'](0x0,_0x1e9226);const _0x36b5ef=_0x21889d['c']*_0x1596a5*_0x8f1e4c*_0x2119ac*_0x2770ce*_0x6815bf[_0x532f27(0x22d)]+_0x2ebc60*_0x47f417*_0x4e9ee3*_0x5c2d13*_0x430769*_0x6815bf[_0x532f27(0x1eb)]+0.5*_0x1e9226*_0x2af14f*_0x2dcc58*_0x4bb3d4*_0x5df1c7*_0x16da2f*_0x6815bf['F_gamma_c'],_0x2ce99b=_0x36b5ef*_0x48aa7b,_0x8da02b=_0x36b5ef/SAFETY_FACTOR,_0x333cc1=_0x21889d[_0x532f27(0x1d1)]<=_0x8da02b?_0x532f27(0x1bf):_0x532f27(0x1b1);displayResults({..._0x21889d,'B_prime':_0x2af14f,'L_prime':_0x2e81c9,'A_prime':_0x48aa7b,..._0x6815bf,'Nc':_0x1596a5,'Nq':_0x47f417,'Ngamma':_0x2dcc58,'Fcs':_0x8f1e4c,'Fqs':_0x4e9ee3,'F_gamma_s':_0x4bb3d4,'Fcd':_0x2119ac,'Fqd':_0x5c2d13,'F_gamma_d':_0x5df1c7,'Fci':_0x2770ce,'Fqi':_0x430769,'F_gamma_i':_0x16da2f,'q_ultimate':_0x36b5ef,'Q_ultimate':_0x2ce99b,'q_allowable':_0x8da02b,'safetyStatus':_0x333cc1});}catch(_0x3469e9){resultsArea[_0x532f27(0x1be)]=_0x532f27(0x1ab)+_0x3469e9['message']+'</div>',resultsArea[_0x532f27(0x21b)][_0x532f27(0x1e9)]=_0x532f27(0x1e0),printReportBtn['style']['display']='none';}}function displayResults(_0x55b71b){const _0x45d6d5=_0x26ce55;let _0xd27716=0x1;const _0x162dbe=(_0x4be4b0,_0x4ba160)=>_0x45d6d5(0x232)+_0xd27716++ +'.\x20'+_0x4be4b0+'</h3>'+_0x4ba160+'</div>',_0x24606a=(_0x438d9c,_0x203b02)=>{const _0x2904f1=_0x45d6d5;let _0x44ef07=_0x2904f1(0x205)+_0x438d9c[_0x2904f1(0x196)](_0x3db19c=>'<th>'+_0x3db19c+_0x2904f1(0x218))[_0x2904f1(0x22f)]('')+_0x2904f1(0x199),_0x38e402=_0x2904f1(0x202)+_0x203b02[_0x2904f1(0x196)](_0x3e35ae=>_0x2904f1(0x1d9)+_0x3e35ae[_0x2904f1(0x196)](_0x6ccd2=>_0x2904f1(0x1ee)+_0x6ccd2+_0x2904f1(0x231))['join']('')+'</tr>')[_0x2904f1(0x22f)]('')+_0x2904f1(0x1ea);return _0x2904f1(0x1f3)+_0x44ef07+_0x38e402+_0x2904f1(0x1f6);},_0x77da8=_0x4cdc4f=>{const _0x1f8e19=_0x45d6d5;let _0xc0012e=_0x1f8e19(0x202)+_0x4cdc4f[_0x1f8e19(0x196)](_0x22fb75=>'<tr><td\x20class=\x22label\x22>'+_0x22fb75[0x0]+_0x1f8e19(0x1f5)+_0x22fb75[0x1]+_0x1f8e19(0x1f5)+_0x22fb75[0x2]+_0x1f8e19(0x19c))['join']('')+_0x1f8e19(0x1ea);return'<table\x20class=\x22results-table\x22><thead><tr><th>البيان</th><th>القيمة</th><th>الوحدة</th></tr></thead>'+_0xc0012e+_0x1f8e19(0x1f6);};let _0xe66a3e='<div\x20class=\x22card-header\x20text-center\x22><h2>النتائج\x20المحسوبة</h2></div>';_0xe66a3e+=_0x162dbe(_0x45d6d5(0x1ac),_0x24606a([_0x45d6d5(0x21a),_0x45d6d5(0x1d6),'N<sub>γ</sub>'],[[_0x55b71b['Nc'][_0x45d6d5(0x1a2)](0x2),_0x55b71b['Nq'][_0x45d6d5(0x1a2)](0x2),_0x55b71b['Ngamma'][_0x45d6d5(0x1a2)](0x2)]])),_0xe66a3e+=_0x162dbe(_0x45d6d5(0x1ed),_0x24606a([_0x45d6d5(0x20a),'الشكل\x20(s)',_0x45d6d5(0x1cc)],[[_0x45d6d5(0x19b),_0x55b71b[_0x45d6d5(0x216)][_0x45d6d5(0x1a2)](0x3),_0x55b71b['Fcd']['toFixed'](0x3)],[_0x45d6d5(0x215),_0x55b71b['Fqs'][_0x45d6d5(0x1a2)](0x3),_0x55b71b[_0x45d6d5(0x19d)][_0x45d6d5(0x1a2)](0x3)],[_0x45d6d5(0x22e),_0x55b71b['F_gamma_s'][_0x45d6d5(0x1a2)](0x3),_0x55b71b[_0x45d6d5(0x1ad)][_0x45d6d5(0x1a2)](0x3)]]));if(_0x55b71b[_0x45d6d5(0x225)]){let _0x40e3a8=_0x24606a([_0x45d6d5(0x20a),_0x45d6d5(0x1b5)],[[_0x45d6d5(0x19b),_0x55b71b[_0x45d6d5(0x1e1)][_0x45d6d5(0x1a2)](0x3)],['<strong>q</strong>',_0x55b71b[_0x45d6d5(0x1a7)][_0x45d6d5(0x1a2)](0x3)],[_0x45d6d5(0x22e),_0x55b71b['F_gamma_i'][_0x45d6d5(0x1a2)](0x3)]])+_0x45d6d5(0x22b)+_0x24606a(['البعد\x20الفعال\x20B\x27\x20(m)','البعد\x20الفعال\x20L\x27\x20(m)','المساحة\x20الفعالة\x20A\x27\x20(m²)'],[[_0x55b71b[_0x45d6d5(0x1bb)][_0x45d6d5(0x1a2)](0x2),_0x55b71b[_0x45d6d5(0x1de)][_0x45d6d5(0x1a2)](0x2),_0x55b71b[_0x45d6d5(0x1fa)][_0x45d6d5(0x1a2)](0x3)]]);_0xe66a3e+=_0x162dbe(_0x45d6d5(0x1fb),_0x40e3a8);}if(_0x55b71b[_0x45d6d5(0x22a)]){let _0x14f3a1=_0x45d6d5(0x1b8)+(_0x55b71b['Ir']>=_0x55b71b[_0x45d6d5(0x1f9)]?_0x45d6d5(0x19a):_0x45d6d5(0x1ca))+'\x22>'+_0x55b71b[_0x45d6d5(0x1d8)]+'</div>'+_0x24606a([_0x45d6d5(0x1b2),_0x45d6d5(0x22c),_0x45d6d5(0x1d3),_0x45d6d5(0x21c),_0x45d6d5(0x1c8),_0x45d6d5(0x1ec)],[[_0x55b71b['Gs'][_0x45d6d5(0x1a2)](0x2),_0x55b71b['Ir'][_0x45d6d5(0x1a2)](0x2),_0x55b71b[_0x45d6d5(0x1f9)][_0x45d6d5(0x1a2)](0x2),_0x55b71b[_0x45d6d5(0x22d)][_0x45d6d5(0x1a2)](0x3),_0x55b71b['Fqc'][_0x45d6d5(0x1a2)](0x3),_0x55b71b[_0x45d6d5(0x1e5)][_0x45d6d5(0x1a2)](0x3)]]);_0xe66a3e+=_0x162dbe(_0x45d6d5(0x1e3),_0x14f3a1);}_0xe66a3e+=_0x162dbe(_0x45d6d5(0x211),_0x77da8([[_0x45d6d5(0x1fd),_0x55b71b[_0x45d6d5(0x21d)][_0x45d6d5(0x1a2)](0x2),'kN/m²'],[_0x45d6d5(0x1c1),_0x55b71b['Q_ultimate'][_0x45d6d5(0x1a2)](0x2),'kN'],[_0x45d6d5(0x1c2),SAFETY_FACTOR,'-'],[_0x45d6d5(0x1b3),_0x45d6d5(0x207)+_0x55b71b[_0x45d6d5(0x1c5)]['toFixed'](0x2)+_0x45d6d5(0x1ba),_0x45d6d5(0x203)],[_0x45d6d5(0x1f0),_0x55b71b[_0x45d6d5(0x1d1)][_0x45d6d5(0x1a2)](0x2),_0x45d6d5(0x203)],[_0x45d6d5(0x198),_0x45d6d5(0x227)+(_0x55b71b[_0x45d6d5(0x1f2)][_0x45d6d5(0x1ff)]('آمن')?_0x45d6d5(0x1bc):_0x45d6d5(0x1bd))+'\x20text-lg\x22>'+_0x55b71b['safetyStatus']+'</span>','-']])),resultsArea[_0x45d6d5(0x1be)]=_0xe66a3e,resultsArea['style'][_0x45d6d5(0x1e9)]=_0x45d6d5(0x1e0),printReportBtn['style'][_0x45d6d5(0x1e9)]=_0x45d6d5(0x1f8);}
+    </script>
+</body>
+</html>
