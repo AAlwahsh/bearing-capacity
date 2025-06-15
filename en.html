@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Bearing Capacity Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        .container { max-width: 900px; }
+        .card { background-color: white; padding: 1.5rem 2rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); margin-bottom: 2rem; }
+        .card-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .card-header h2 { font-size: 1.5rem; font-weight: 700; color: #1f2937; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; font-size: 0.875rem; }
+        .input-group input, .input-group select { width: 100%; padding: 0.625rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); }
+        .btn { padding: 0.75rem 1.75rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; }
+        .btn-primary { background-color: #8b5cf6; color: white; } .btn-primary:hover { background-color: #7c3aed; }
+        .btn-secondary { background-color: #6b7280; color: white; } .btn-secondary:hover { background-color: #4b5563; }
+        .btn-link { background-color: transparent; color: #8b5cf6; font-weight: bold; } .btn-link:hover { color: #7c3aed; }
+        .btn-example { background-color: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; padding: 0.5rem 1rem; font-size: 0.875rem; } .btn-example:hover { background-color: #e5e7eb; }
+        .results-section h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #1f2937; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .results-table th, .results-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: center; font-size: 0.875rem; }
+        .results-table th { background-color: #f9fafb; font-weight: 600; color: #4b5563; }
+        .results-table td.label { font-weight: 600; color: #374151; text-align: left; }
+        .status-safe { color: #10b981 !important; font-weight: 700; }
+        .status-unsafe { color: #ef4444 !important; font-weight: 700; }
+        .error-message { color: #ef4444; background-color: #fee2e2; border: 1px solid #fca5a5; padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem; text-align: center;}
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; transition: opacity 0.3s ease; }
+        .modal-container { background-color: white; padding: 0; border-radius: 0.75rem; width: 95%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-body { padding: 1.5rem 2rem; overflow-y: auto; line-height: 1.8; }
+        .modal-body h4 { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+        .modal-body h5 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .modal-body p { margin-bottom: 1rem; color: #4b5563; }
+        .modal-body ul { list-style-type: disc; padding-left: 2rem; margin-bottom: 1rem; }
+        .modal-body li { margin-bottom: 0.5rem; }
+        .modal-tabs { display: flex; border-bottom: 1px solid #e5e7eb; padding: 0 1.5rem; }
+        .modal-tab { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: #6b7280; margin-bottom: -1px; }
+        .modal-tab.active { color: #8b5cf6; border-bottom-color: #8b5cf6; }
+        .equation { font-family: 'Courier New', Courier, monospace; background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; text-align: left; direction: ltr; font-size: 1rem; white-space: pre-wrap; word-wrap: break-word; border: 1px solid #e5e7eb; }
+        .modal-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+        .modal-table th, .modal-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: left; }
+        .modal-table th { background-color: #f9fafb; font-weight: 600; }
+        .modal-table td:first-child { font-weight: 600; color: #374151; text-align: center; }
+
+        .hidden { display: none; }
+        @media print {
+            body, .card { background-color: white; }
+            body * { visibility: hidden; }
+            #resultsArea, #resultsArea * { visibility: visible; }
+            #resultsArea { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 10px; border: none; box-shadow: none; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-4 sm:p-6">
+        <div class="card no-print">
+            <div class="card-header text-center">
+                <h2>Soil Bearing Capacity Calculator (Shallow Foundation)</h2>
+            </div>
+            
+            <form id="bearingCapacityForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
+                 <div class="lg:col-span-3 mb-4">
+                    <h3 class="text-md font-semibold text-gray-800 mb-3">Preset Examples (Das)</h3>
+                    <div class="flex space-x-4 border-b border-gray-200 pb-6">
+                        <button type="button" id="example1Btn" class="btn btn-example">Load Example 6.1</button>
+                        <button type="button" id="example2Btn" class="btn btn-example">Load Example 6.6</button>
+                    </div>
+                </div>
+                <div class="input-group lg:col-span-3"><label for="foundation_type">Foundation Type:</label><select id="foundation_type"><option value="strip">Strip</option><option value="rectangular">Rectangular</option><option value="square">Square</option><option value="circular">Circular</option></select></div>
+                <div class="input-group"><label for="B" id="label_B">Width (B) (m):</label><input type="number" id="B" step="any"></div>
+                <div class="input-group hidden" id="group_L"><label for="L" id="label_L">Length (L) (m):</label><input type="number" id="L" step="any"></div>
+                <div class="input-group"><label for="D_foundation">Foundation Depth (D<sub>f</sub>, m):</label><input type="number" id="D_foundation" step="any" min="0"></div>
+                <div class="input-group"><label for="phi_deg">Friction Angle (φ, degrees):</label><input type="number" id="phi_deg" step="any" min="0" max="90"></div>
+                <div class="input-group"><label for="c">Cohesion (c, kN/m²):</label><input type="number" id="c" step="any" min="0"></div>
+                <div class="input-group">
+                    <label for="gamma_above">Unit Weight Above Foundation (γ₁, kN/m³):</label>
+                    <input type="number" id="gamma_above" step="any" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="gamma_below">Unit Weight Below Foundation (γ₂, kN/m³):</label>
+                    <input type="number" id="gamma_below" step="any" min="0">
+                </div>
+                <div class="input-group"><label for="Q_applied">Applied Load (q<sub>app</sub>, kN/m²):</label><input type="number" id="Q_applied" step="any" min="0"></div>
+                <div class="input-group"><label for="GWT_depth">Water Table Depth (D<sub>w</sub>, m, -1 for no effect):</label><input type="number" id="GWT_depth" step="any"></div>
+                
+                <div class="lg:col-span-3 toggle-section">
+                     <div class="flex items-center mb-4"><input id="advancedLoading" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2"><label for="advancedLoading" class="font-semibold text-gray-900">Advanced Loading (Eccentricity & Inclination)</label></div>
+                    <div id="advanced_loading_inputs" class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 hidden">
+                       <div class="input-group"><label for="eB">Eccentricity e<sub>B</sub> (m):</label><input type="number" id="eB" step="any" value="0"></div>
+                       <div class="input-group"><label for="eL">Eccentricity e<sub>L</sub> (m):</label><input type="number" id="eL" step="any" value="0"></div>
+                       <div class="input-group"><label for="beta">Load Inclination Angle β (degrees):</label><input type="number" id="beta" step="any" value="0"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 toggle-section pt-4">
+                     <div class="flex items-center mb-4"><input id="considerCompressibility" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-2"><label for="considerCompressibility" class="font-semibold text-gray-900">Consider Compressibility (Das/Vesic)</label></div>
+                    <div id="compressibility_inputs" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 hidden">
+                        <div class="input-group"><label for="Es">Modulus of Elasticity (Es, kN/m²):</label><input type="number" id="Es" step="any"></div>
+                        <div class="input-group"><label for="mu_s">Poisson's Ratio (μs):</label><input type="number" id="mu_s" step="any"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 flex justify-center items-center pt-4 space-x-4">
+                    <button type="submit" class="btn btn-primary">Calculate Bearing Capacity</button>
+                    <button type="button" id="assumptionsBtn" class="btn btn-link">Methodology & Info</button>
+                    <button type="button" id="printReportBtn" class="btn btn-secondary" style="display: none;">Print Report</button>
+                </div>
+            </form>
+            <footer class="text-center text-gray-500 text-xs mt-8 pt-4 border-t">
+                <p>All rights reserved © Ahmed Alwahsh 2025</p>
+                <p>Feedback: <a href="mailto:aalwahsh87@gmail.com" class="text-purple-600 hover:underline">aalwahsh87@gmail.com</a></p>
+            </footer>
+        </div>
+
+        <div id="resultsArea" class="card" style="display: none;"></div>
+    </div>
+
+    <!-- Modal with 3 tabs -->
+    <div id="infoModal" class="modal-overlay hidden no-print">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold text-gray-800">Methodology & Information</h2>
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" data-tab="methodology">Methodology & Assumptions</button>
+                <button class="modal-tab" data-tab="equations">Equations & Calculation Steps</button>
+                <button class="modal-tab" data-tab="disclaimer">Disclaimer</button>
+            </div>
+            <div class="modal-body">
+                <!-- Methodology Content -->
+                <div id="methodologyContent" class="modal-content">
+                    <h4>General Methodology</h4>
+                    <p>
+                        This calculator is based on the <strong>General Bearing Capacity Equation</strong>. This equation is a modified and expanded version of Terzaghi's classic formula, providing more accurate results by introducing a series of correction factors that account for various real-world conditions.
+                    </p>
+                    <h5>Primary References for Equations Used:</h5>
+                    <ul>
+                        <li><strong>Vesic (1973, 1975):</strong> For bearing capacity factors (N<sub>c</sub>, N<sub>q</sub>, N<sub>γ</sub>) and compressibility factors.</li>
+                        <li><strong>Hansen (1970):</strong> For depth factors (F<sub>cd</sub>, F<sub>qd</sub>).</li>
+                        <li><strong>De Beer (1970) / Meyerhof (1963):</strong> For shape factors (F<sub>cs</sub>, F<sub>qs</sub>, F<sub>γs</sub>).</li>
+                    </ul>
+
+                    <h4>Key Assumptions</h4>
+                    <ol class="list-decimal pl-5">
+                        <li><strong>Failure Mode:</strong> The soil is assumed to undergo general shear failure.</li>
+                        <li><strong>Soil Homogeneity:</strong> Soil properties (c, φ) are considered constant and uniform below the foundation.</li>
+                        <li><strong>Foundation Rigidity:</strong> The foundation is assumed to be rigid and act as a single unit.</li>
+                    </ol>
+                </div>
+                <!-- Equations Content -->
+                <div id="equationsContent" class="modal-content hidden">
+                    <h4>Manual Calculation Verification Guide</h4>
+                    <p>To verify any result, follow these steps in order:</p>
+                     
+                    <h5>1. General Bearing Capacity Equation</h5>
+                    <div class="equation">qult = (c' Nc Fcs Fcd Fci Fcc) + (q Nq Fqs Fqd Fqi Fqc) + (0.5 γ' B' Nγ Fγs Fγd Fγi Fγc)</div>
+
+                    <h5>2. Correction Factor Definitions</h5>
+                    <table class="modal-table">
+                         <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Description</th>
+                             </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>F<sub>cs</sub>, F<sub>qs</sub>, F<sub>γs</sub></td><td>Shape factors, dependent on foundation dimensions (B/L).</td></tr>
+                            <tr><td>F<sub>cd</sub>, F<sub>qd</sub>, F<sub>γd</sub></td><td>Depth factors, dependent on embedment depth to width ratio (Df/B).</td></tr>
+                             <tr><td>F<sub>ci</sub>, F<sub>qi</sub>, F<sub>γi</sub></td><td>Load inclination factors, dependent on the angle of the load from the vertical axis.</td></tr>
+                             <tr><td>F<sub>cc</sub>, F<sub>qc</sub>, F<sub>γc</sub></td><td>Compressibility factors, to account for soil rigidity.</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h5>3. Calculate Effective Vertical Stress `q` (Second Term)</h5>
+                    <p class="text-gray-600">This step depends on the location of the water table (Dw) relative to the foundation depth (Df).</p>
+                    <div class="mt-2">
+                        <h5 class="font-semibold text-sm">Case A: Water table below foundation base <span class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> &ge; D<sub>f</sub>)</span></h5>
+                        <div class="equation text-sm">q = γ₁ × Df</div>
+
+                        <h5 class="font-semibold text-sm mt-4">Case B: Water table above foundation base <span class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> < D<sub>f</sub>)</span></h5>
+                        <div class="equation text-sm">q = (γ₁ × Dw) + ((γ₁_sat - γ_water) × (Df - Dw))</div>
+                    </div>
+                    
+                    <h5 class="mt-6">4. Calculate Effective Unit Weight `γ'` (Third Term)</h5>
+                    <p class="text-gray-600">This step depends on the water table location (Dw) relative to the failure zone below the foundation (which extends to depth Df + B').</p>
+                    <div class="mt-2">
+                         <h5 class="font-semibold text-sm">Case A: Water is very deep <span class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> &ge; D<sub>f</sub> + B')</span></h5>
+                         <div class="equation text-sm">γ' = γ₂</div>
+
+                         <h5 class="font-semibold text-sm mt-4">Case B: Water at or above foundation level <span class="font-sans text-gray-500 font-normal ml-2">(D<sub>w</sub> &le; D<sub>f</sub>)</span></h5>
+                         <div class="equation text-sm">γ' = γ₂_sat - γ_water</div>
+
+                         <h5 class="font-semibold text-sm mt-4">Case C: Water within the failure zone <span class="font-sans text-gray-500 font-normal ml-2">(D<sub>f</sub> < D<sub>w</sub> < D<sub>f</sub> + B')</span></h5>
+                         <p class="text-gray-600 text-sm">A linear average of the unit weight is used.</p>
+                    </div>
+                </div>
+                <!-- Disclaimer Content -->
+                <div id="disclaimerContent" class="modal-content hidden">
+                    <h4>Disclaimer</h4>
+                    <div class="border-l-4 border-yellow-500 bg-yellow-50 p-4 rounded-md text-yellow-900">
+                        <p>This calculator is designed and provided as a tool for educational and preliminary estimation purposes only. Its results should not be considered a substitute for professional engineering analysis and consultation with a qualified geotechnical engineer.</p>
+                        <p>While every effort has been made to ensure the accuracy of the calculations based on standard engineering references and equations, the developer of this tool makes no warranties, either express or implied, regarding the correctness, completeness, or suitability of the results for any specific purpose.</p>
+                        <p>The user must independently verify all results before using them in any actual engineering designs or for construction purposes. The user bears sole and full responsibility for any decisions or actions taken based on the information provided by this tool. The developer is not liable for any direct or indirect damages that may arise from the use of this calculator.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const _0x2560c3=_0x57d0;(function(_0x58bf07,_0x49c1e7){const _0x21e504=_0x57d0,_0x39aacc=_0x58bf07();while(!![]){try{const _0x4308ee=-parseInt(_0x21e504(0x1b1))/0x1+-parseInt(_0x21e504(0x156))/0x2+-parseInt(_0x21e504(0x18a))/0x3+-parseInt(_0x21e504(0x1b6))/0x4*(parseInt(_0x21e504(0x129))/0x5)+parseInt(_0x21e504(0x186))/0x6*(-parseInt(_0x21e504(0x18b))/0x7)+-parseInt(_0x21e504(0x141))/0x8*(parseInt(_0x21e504(0x169))/0x9)+parseInt(_0x21e504(0x162))/0xa;if(_0x4308ee===_0x49c1e7)break;else _0x39aacc['push'](_0x39aacc['shift']());}catch(_0x14a00f){_0x39aacc['push'](_0x39aacc['shift']());}}}(_0x135f,0xea644));const SAFETY_FACTOR=0x3,GAMMA_WATER=9.81,toRadians=_0x213954=>_0x213954*(Math['PI']/0xb4),form=document[_0x2560c3(0x1a3)](_0x2560c3(0x151)),foundationTypeSelect=document[_0x2560c3(0x1a3)](_0x2560c3(0x1a6)),labelB=document['getElementById'](_0x2560c3(0x11a)),groupL=document[_0x2560c3(0x1a3)]('group_L'),inputL=document[_0x2560c3(0x1a3)]('L'),advancedLoadingCheck=document['getElementById'](_0x2560c3(0x140)),advancedLoadingInputsDiv=document['getElementById'](_0x2560c3(0x121)),considerCompressibilityCheck=document[_0x2560c3(0x1a3)]('considerCompressibility'),compressibilityInputsDiv=document[_0x2560c3(0x1a3)](_0x2560c3(0x127)),resultsArea=document['getElementById']('resultsArea'),assumptionsBtn=document['getElementById'](_0x2560c3(0x185)),modal=document[_0x2560c3(0x1a3)](_0x2560c3(0x13e)),closeModalBtn=document[_0x2560c3(0x1a3)](_0x2560c3(0x184)),printReportBtn=document['getElementById'](_0x2560c3(0x17f)),example1Btn=document[_0x2560c3(0x1a3)](_0x2560c3(0x159)),example2Btn=document[_0x2560c3(0x1a3)](_0x2560c3(0x183));function handleFoundationTypeChange(){const _0x67f74a=_0x2560c3,_0x49fa36=foundationTypeSelect[_0x67f74a(0x15e)];groupL['classList'][_0x67f74a(0x114)](_0x67f74a(0x14c),_0x49fa36!==_0x67f74a(0x167)),inputL['required']=_0x49fa36==='rectangular';if(_0x49fa36==='circular')labelB['textContent']=_0x67f74a(0x19e);else{if(_0x49fa36===_0x67f74a(0x175))labelB[_0x67f74a(0x15a)]=_0x67f74a(0x155);else labelB[_0x67f74a(0x15a)]='Width\x20(B)\x20(m):';}}function fillForm(_0xf40919){const _0x52fa5e=_0x2560c3;Object['keys'](_0xf40919)[_0x52fa5e(0x130)](_0x8aa695=>{const _0x4f87fc=_0x52fa5e,_0x3405e0=document[_0x4f87fc(0x1a3)](_0x8aa695);_0x3405e0&&(_0x3405e0['type']==='checkbox'?(_0x3405e0[_0x4f87fc(0x196)]=_0xf40919[_0x8aa695],_0x3405e0[_0x4f87fc(0x15c)](new Event(_0x4f87fc(0x12a)))):_0x3405e0[_0x4f87fc(0x15e)]=_0xf40919[_0x8aa695]);}),foundationTypeSelect[_0x52fa5e(0x15c)](new Event(_0x52fa5e(0x12a)));}handleFoundationTypeChange(),foundationTypeSelect[_0x2560c3(0x174)](_0x2560c3(0x12a),handleFoundationTypeChange),advancedLoadingCheck[_0x2560c3(0x174)]('change',_0x525969=>advancedLoadingInputsDiv[_0x2560c3(0x1a8)][_0x2560c3(0x114)](_0x2560c3(0x14c),!_0x525969[_0x2560c3(0x198)][_0x2560c3(0x196)])),considerCompressibilityCheck[_0x2560c3(0x174)](_0x2560c3(0x12a),_0x5075d7=>{const _0x31268f=_0x2560c3;compressibilityInputsDiv[_0x31268f(0x1a8)][_0x31268f(0x114)]('hidden',!_0x5075d7['target'][_0x31268f(0x196)]),document[_0x31268f(0x1a3)]('Es')['required']=_0x5075d7[_0x31268f(0x198)][_0x31268f(0x196)],document[_0x31268f(0x1a3)](_0x31268f(0x191))['required']=_0x5075d7[_0x31268f(0x198)]['checked'];}),assumptionsBtn['addEventListener']('click',()=>modal[_0x2560c3(0x1a8)][_0x2560c3(0x1b0)](_0x2560c3(0x14c))),closeModalBtn[_0x2560c3(0x174)](_0x2560c3(0x160),()=>modal['classList'][_0x2560c3(0x19b)](_0x2560c3(0x14c))),modal['addEventListener'](_0x2560c3(0x160),_0x454dac=>{const _0x49e27a=_0x2560c3;if(_0x454dac[_0x49e27a(0x198)]===modal)modal[_0x49e27a(0x1a8)]['add'](_0x49e27a(0x14c));}),form['addEventListener'](_0x2560c3(0x11d),_0x97bb93=>{const _0x58b966=_0x2560c3;_0x97bb93[_0x58b966(0x194)](),mainAnalysis();}),printReportBtn[_0x2560c3(0x174)](_0x2560c3(0x160),()=>window['print']()),example1Btn[_0x2560c3(0x174)](_0x2560c3(0x160),()=>{const _0x46bd9=_0x2560c3,_0x1c4610={'foundation_type':_0x46bd9(0x1ab),'B':0x2,'D_foundation':1.5,'phi_deg':0x1a,'c':0xa,'gamma_above':0x13,'gamma_below':0x13,'Q_applied':0x0,'GWT_depth':-0x1,'advancedLoading':![],'considerCompressibility':![],'eB':0x0,'eL':0x0,'beta':0x0,'Es':'','mu_s':''};fillForm(_0x1c4610);}),example2Btn[_0x2560c3(0x174)](_0x2560c3(0x160),()=>{const _0x3b9ebe=_0x2560c3,_0x163825={'foundation_type':_0x3b9ebe(0x167),'B':0.6,'L':1.2,'D_foundation':0.6,'phi_deg':0x19,'c':0x30,'gamma_above':0x12,'gamma_below':0x12,'Q_applied':0x0,'GWT_depth':-0x1,'advancedLoading':![],'considerCompressibility':!![],'eB':0x0,'eL':0x0,'beta':0x0,'Es':0x26c,'mu_s':0.3};fillForm(_0x163825);});function _0x57d0(_0x13e944,_0x3344fd){const _0x135f81=_0x135f();return _0x57d0=function(_0x57d05f,_0x442de0){_0x57d05f=_0x57d05f-0x114;let _0x41e3d3=_0x135f81[_0x57d05f];return _0x41e3d3;},_0x57d0(_0x13e944,_0x3344fd);}const tabs=document[_0x2560c3(0x1a9)](_0x2560c3(0x16a)),tabContents=document[_0x2560c3(0x1a9)]('.modal-content');tabs[_0x2560c3(0x130)](_0x35bce6=>{const _0x3b16c1=_0x2560c3;_0x35bce6['addEventListener'](_0x3b16c1(0x160),()=>{const _0x19d556=_0x3b16c1;tabs[_0x19d556(0x130)](_0x13cf40=>_0x13cf40[_0x19d556(0x1a8)]['remove'](_0x19d556(0x12f))),_0x35bce6['classList'][_0x19d556(0x19b)](_0x19d556(0x12f));const _0x57f9d8=_0x35bce6[_0x19d556(0x163)](_0x19d556(0x13a));tabContents[_0x19d556(0x130)](_0x57e34f=>{const _0x5d559b=_0x19d556;_0x57e34f['id']===_0x57f9d8+_0x5d559b(0x143)?_0x57e34f[_0x5d559b(0x1a8)][_0x5d559b(0x1b0)](_0x5d559b(0x14c)):_0x57e34f[_0x5d559b(0x1a8)][_0x5d559b(0x19b)](_0x5d559b(0x14c));});});});function _0x135f(){const _0x1a14fe=['</strong>','Final\x20Results','data-tab','F<sub>qc</sub>','sqrt','UNSAFE','infoModal','<strong>q</strong>','advancedLoading','131096sZMTrH','F_gamma_d','Content','<tbody>','<div\x20class=\x22error-message\x22>Error:\x20','q_ultimate','exp','Poisson\x27s\x20Ratio','Width','Depth','toFixed','hidden','</span>','D_foundation','max','B_prime','bearingCapacityForm','I<sub>r(cr)</sub>','Ngamma','log10','Side\x20Length\x20(B)\x20(m):','2397518XinuKU','F_gamma_c','</h3>','example1Btn','textContent','Depth\x20(d)','dispatchEvent','considerCompressibility','value','inline-block','click','Q_ultimate','79750280FrlKmZ','getAttribute','Compressibility\x20analysis\x20not\x20enabled.','\x20text-lg\x22>','acos','rectangular','</table>','603CbxgDF','.modal-tab','<div\x20class=\x22card-header\x20text-center\x22><h2>Calculation\x20Results</h2></div>','<strong\x20class=\x22text-lg\x22>','tan','Allowable\x20Bearing\x20Capacity\x20(q<sub>all</sub>)','Unit\x20Weight\x20Above','Soil\x20is\x20compressible\x20(Ir\x20=\x20','Fci','Length','Soil\x20is\x20not\x20compressible\x20(Ir\x20=\x20','addEventListener','square','Eccentricity\x20&\x20Inclination\x20Analysis','message','<strong>c</strong>','pow','Fcs','</th>','<br>','none','Correction\x20Factors','printReportBtn','Factor\x20for','Water\x20Table\x20Depth','<thead><tr>','example2Btn','closeModalBtn','assumptionsBtn','54bHazwi','gamma_above','Inclination\x20(i)','GWT_depth','5047803JCFpSa','1083341aNHEUc','status-unsafe','join','</td></tr>','</td><td>','q_allowable','mu_s','block','innerHTML','preventDefault','</tr></thead>','checked','Fqc','target','Bearing\x20Capacity\x20Factors','Ultimate\x20Bearing\x20Capacity\x20(q\x27<sub>ult</sub>)','add','Effective\x20Width\x20B\x27\x20(m)','Foundation\x20Status','Diameter\x20(D\x20or\x20B)\x20(m):','bg-yellow-100\x20text-yellow-800','</div>','<tr>','\x22\x20is\x20required.','getElementById','Eccentricity\x20is\x20too\x20large;\x20effective\x20dimensions\x20are\x20zero\x20or\x20negative.','Cohesion','foundation_type','Fcc','classList','querySelectorAll','display','strip','Compressibility\x20Analysis','I<sub>r</sub>','F_gamma_s','phi_deg','remove','1589206GvnAeU','Q_applied','<strong>γ</strong>','N<sub>γ</sub>','<th>','8Wuvbjf','kN/m²','toggle','Applied\x20Load','<td>','beta','F<sub>γc</sub>','sin','label_B','Fqi','Total\x20Ultimate\x20Load\x20(Q<sub>ult</sub>)','submit','Factor\x20of\x20Safety\x20(FS)','Effective\x20Length\x20L\x27\x20(m)','atan','advanced_loading_inputs','circular','Shape\x20(s)','Applied\x20Load\x20(q<sub>app</sub>)','map','F<sub>cc</sub>','compressibility_inputs','A_prime','133995dPSqeh','change','style','</tbody>','Modulus\x20of\x20Elasticity','Irc','active','forEach','G<sub>s</sub>\x20(kN/m²)','SAFE','</td>','status','Fqd','gamma_below','<div\x20class=\x22results-section\x22><h3>'];_0x135f=function(){return _0x1a14fe;};return _0x135f();}function validateAndGetInputs(){const _0x2bb3bd=_0x2560c3,_0x31906b=(_0x1fa21f,_0x50e4ea,_0x3a4774)=>{const _0x2dfbaf=_0x57d0,_0x5f5461=document['getElementById'](_0x1fa21f),_0x11405b=_0x5f5461['value'];if(_0x3a4774&&_0x11405b['trim']()==='')throw new Error('Field\x20\x22'+_0x50e4ea+_0x2dfbaf(0x1a2));if(_0x11405b['trim']()==='')return 0x0;const _0x2e18e4=parseFloat(_0x11405b);if(isNaN(_0x2e18e4))throw new Error('Invalid\x20value\x20in\x20field\x20\x22'+_0x50e4ea+'\x22.');return _0x2e18e4;},_0x5eba22={},_0x3bd19c=foundationTypeSelect[_0x2bb3bd(0x15e)];return _0x5eba22[_0x2bb3bd(0x1a6)]=_0x3bd19c,_0x5eba22['B']=_0x31906b('B',_0x2bb3bd(0x149),!![]),_0x5eba22['L']=_0x3bd19c===_0x2bb3bd(0x167)?_0x31906b('L',_0x2bb3bd(0x172),!![]):_0x5eba22['B'],_0x5eba22[_0x2bb3bd(0x14e)]=_0x31906b(_0x2bb3bd(0x14e),_0x2bb3bd(0x14a),!![]),_0x5eba22[_0x2bb3bd(0x1af)]=_0x31906b(_0x2bb3bd(0x1af),'Friction\x20Angle',!![]),_0x5eba22['c']=_0x31906b('c',_0x2bb3bd(0x1a5),!![]),_0x5eba22[_0x2bb3bd(0x187)]=_0x31906b(_0x2bb3bd(0x187),_0x2bb3bd(0x16f),!![]),_0x5eba22[_0x2bb3bd(0x136)]=_0x31906b('gamma_below','Unit\x20Weight\x20Below',!![]),_0x5eba22[_0x2bb3bd(0x1b2)]=_0x31906b(_0x2bb3bd(0x1b2),_0x2bb3bd(0x115),!![]),_0x5eba22[_0x2bb3bd(0x189)]=_0x31906b(_0x2bb3bd(0x189),_0x2bb3bd(0x181),!![]),_0x5eba22[_0x2bb3bd(0x140)]=advancedLoadingCheck[_0x2bb3bd(0x196)],_0x5eba22['eB']=_0x5eba22[_0x2bb3bd(0x140)]?_0x31906b('eB','eB'):0x0,_0x5eba22['eL']=_0x5eba22[_0x2bb3bd(0x140)]?_0x31906b('eL','eL'):0x0,_0x5eba22[_0x2bb3bd(0x117)]=_0x5eba22['advancedLoading']?_0x31906b(_0x2bb3bd(0x117),_0x2bb3bd(0x117)):0x0,_0x5eba22[_0x2bb3bd(0x15d)]=considerCompressibilityCheck[_0x2bb3bd(0x196)],_0x5eba22['Es']=_0x5eba22[_0x2bb3bd(0x15d)]?_0x31906b('Es',_0x2bb3bd(0x12d),!![]):null,_0x5eba22['mu_s']=_0x5eba22['considerCompressibility']?_0x31906b(_0x2bb3bd(0x191),_0x2bb3bd(0x148),!![]):null,_0x5eba22;}function calculateBearingCapacityFactors(_0x5c13c2){const _0x486e1f=_0x2560c3,_0x56ef9c=toRadians(_0x5c13c2),_0x3c4faf=Math[_0x486e1f(0x147)](Math['PI']*Math[_0x486e1f(0x16d)](_0x56ef9c))*Math[_0x486e1f(0x179)](Math[_0x486e1f(0x16d)](toRadians(0x2d+_0x5c13c2/0x2)),0x2),_0xd82c56=_0x5c13c2===0x0?5.14:(_0x3c4faf-0x1)/Math[_0x486e1f(0x16d)](_0x56ef9c),_0x47955d=0x2*(_0x3c4faf+0x1)*Math[_0x486e1f(0x16d)](_0x56ef9c);return{'Nc':_0xd82c56,'Nq':_0x3c4faf,'Ngamma':_0x47955d};}function calculateShapeFactors(_0x3f1eea,_0x5a2799,_0x4843e8,_0x3f19f6,_0x29886b,_0x5309d1){const _0x17aeda=_0x2560c3,_0x4d9e4f=_0x3f1eea===_0x17aeda(0x1ab)?0x0:_0x5a2799/_0x4843e8,_0x1a097b=toRadians(_0x3f19f6),_0x329761=Math['tan'](_0x1a097b);let _0xfc8ef0,_0x31e1d9,_0x1f9dda;return _0x3f1eea==='circular'?(_0xfc8ef0=0x1+_0x329761,_0x31e1d9=0.6):(_0xfc8ef0=0x1+_0x4d9e4f*_0x329761,_0x31e1d9=0x1-0.4*_0x4d9e4f),_0x1f9dda=_0x29886b*_0x329761===0x0?0x1:0x1+_0x5309d1/_0x29886b*(_0xfc8ef0-0x1)/_0x329761,{'Fcs':_0x1f9dda,'Fqs':_0xfc8ef0,'F_gamma_s':_0x31e1d9};}function calculateDepthFactors(_0xb9622c,_0x23fe5b,_0x544724,_0x5ed03c){const _0x1dc754=_0x2560c3,_0x484c3b=_0xb9622c/_0x23fe5b,_0x5450e4=0x1,_0xa2e20=toRadians(_0x544724);let _0x47c13e;_0x484c3b<=0x1?_0x47c13e=_0x484c3b:_0x47c13e=Math[_0x1dc754(0x120)](_0x484c3b);const _0x53474=0x1+0x2*Math[_0x1dc754(0x16d)](_0xa2e20)*Math['pow'](0x1-Math[_0x1dc754(0x119)](_0xa2e20),0x2)*_0x47c13e,_0x940e1f=_0x544724===0x0?0x1+0.4*_0x47c13e:_0x53474-(0x1-_0x53474)/(_0x5ed03c*Math['tan'](_0xa2e20));return{'Fcd':_0x940e1f,'Fqd':_0x53474,'F_gamma_d':_0x5450e4};}function calculateInclinationFactors(_0x9b4bec,_0x2e87ba){const _0x297d9a=_0x2560c3;if(_0x2e87ba===0x0)return{'Fci':0x1,'Fqi':0x1,'F_gamma_i':0x1};const _0x616672=Math[_0x297d9a(0x179)](0x1-_0x2e87ba/0x5a,0x2),_0x9f17a0=_0x616672,_0x4a6926=_0x9b4bec===0x0?0x1:Math[_0x297d9a(0x179)](0x1-_0x2e87ba/_0x9b4bec,0x2);return{'Fci':_0x9f17a0,'Fqi':_0x616672,'F_gamma_i':_0x4a6926};}function calculateCompressibilityFactors(_0x20ebee,_0x5ed48b){const _0x2c500a=_0x2560c3;if(!_0x20ebee['Es']||!_0x20ebee[_0x2c500a(0x191)])return{'Fcc':0x1,'Fqc':0x1,'F_gamma_c':0x1,'status':_0x2c500a(0x164),'Gs':0x0,'Ir':0x0,'Irc':0x0};const {Es:_0x31b594,mu_s:_0x1bef7e,c:_0x2d7c39,D_foundation:_0x31b9b9,B:_0x1bfe4a,L:_0x12d2f7,gamma_above:_0x154532,GWT_depth:_0x4899e6,phi_deg:_0x253982}=_0x20ebee,_0x1fb662=toRadians(_0x253982),_0x51c38d=_0x31b594/(0x2*(0x1+_0x1bef7e));let _0x2e68d1;_0x4899e6===-0x1||_0x4899e6>=_0x31b9b9?_0x2e68d1=_0x154532*_0x31b9b9:_0x2e68d1=_0x4899e6*_0x154532+(_0x31b9b9-_0x4899e6)*(_0x154532-GAMMA_WATER);_0x2e68d1=Math['max'](0x0,_0x2e68d1);const _0x2a1e18=_0x51c38d/(_0x2d7c39+_0x2e68d1*Math[_0x2c500a(0x16d)](_0x1fb662)),_0x4b8ff6=_0x1bfe4a/_0x12d2f7,_0x5a330c=0x1/Math[_0x2c500a(0x16d)](toRadians(0x2d-_0x253982/0x2)),_0x380f93=0.5*Math[_0x2c500a(0x147)]((3.3-0.45*_0x4b8ff6)*_0x5a330c);let _0x50f5b5,_0x3241ec,_0xfafa32,_0x499e4b;if(_0x2a1e18>=_0x380f93)_0x50f5b5=_0x3241ec=_0xfafa32=0x1,_0x499e4b=_0x2c500a(0x173)+_0x2a1e18[_0x2c500a(0x14b)](0x2)+'\x20>=\x20Irc\x20=\x20'+_0x380f93[_0x2c500a(0x14b)](0x2)+').';else{_0x499e4b=_0x2c500a(0x170)+_0x2a1e18['toFixed'](0x2)+'\x20<\x20Irc\x20=\x20'+_0x380f93[_0x2c500a(0x14b)](0x2)+').';const _0x23d1f9=Math[_0x2c500a(0x154)](0x2*_0x2a1e18),_0x3a7db5=Math[_0x2c500a(0x119)](_0x1fb662),_0x70c98c=Math[_0x2c500a(0x16d)](_0x1fb662),_0x54d5a5=(-4.4+0.6*_0x4b8ff6)*_0x70c98c+3.07*_0x3a7db5*_0x23d1f9/(0x1+_0x3a7db5);_0x3241ec=_0xfafa32=Math[_0x2c500a(0x147)](_0x54d5a5),_0x50f5b5=_0x253982===0x0?0.32+0.12*_0x4b8ff6+0.6*Math[_0x2c500a(0x154)](_0x2a1e18):_0x3241ec-(0x1-_0x3241ec)/(_0x5ed48b*_0x70c98c);}return{'Fcc':_0x50f5b5,'Fqc':_0x3241ec,'F_gamma_c':_0xfafa32,'Ir':_0x2a1e18,'Irc':_0x380f93,'Gs':_0x51c38d,'status':_0x499e4b};}function mainAnalysis(){const _0x171fad=_0x2560c3;resultsArea[_0x171fad(0x193)]='',resultsArea[_0x171fad(0x12b)][_0x171fad(0x1aa)]=_0x171fad(0x17d),printReportBtn['style']['display']='none';try{const _0x581f56=validateAndGetInputs(),_0x530327=_0x581f56['B']-0x2*_0x581f56['eB'],_0x5c116c=_0x581f56['L']-0x2*_0x581f56['eL'];if(_0x530327<=0x0||_0x5c116c<=0x0)throw new Error(_0x171fad(0x1a4));const _0x413a3e=_0x581f56[_0x171fad(0x1a6)]===_0x171fad(0x122)&&_0x581f56['eB']>0x0?Math[_0x171fad(0x179)](_0x581f56['B'],0x2)*Math[_0x171fad(0x166)](0x2*_0x581f56['eB']/_0x581f56['B'])-0x2*_0x581f56['eB']*Math[_0x171fad(0x13c)](Math['pow'](_0x581f56['B'],0x2)/0x4-Math[_0x171fad(0x179)](_0x581f56['eB'],0x2)):_0x530327*_0x5c116c,{Nc:_0x11d90e,Nq:_0x5a406b,Ngamma:_0x253b72}=calculateBearingCapacityFactors(_0x581f56[_0x171fad(0x1af)]),{Fcs:_0x5245c1,Fqs:_0x390e87,F_gamma_s:_0x865427}=calculateShapeFactors(_0x581f56[_0x171fad(0x1a6)],_0x530327,_0x5c116c,_0x581f56[_0x171fad(0x1af)],_0x11d90e,_0x5a406b),{Fcd:_0x39d6e9,Fqd:_0x227fb0,F_gamma_d:_0x302fbf}=calculateDepthFactors(_0x581f56[_0x171fad(0x14e)],_0x581f56['B'],_0x581f56['phi_deg'],_0x11d90e),{Fci:_0x10f9ef,Fqi:_0x45049d,F_gamma_i:_0x11c86e}=calculateInclinationFactors(_0x581f56[_0x171fad(0x1af)],_0x581f56[_0x171fad(0x117)]);let _0x16561e={'Fcc':0x1,'Fqc':0x1,'F_gamma_c':0x1,'status':_0x171fad(0x164),'Gs':0x0,'Ir':0x0,'Irc':0x0};_0x581f56[_0x171fad(0x15d)]&&(_0x16561e=calculateCompressibilityFactors(_0x581f56,_0x11d90e));let _0x41ee6f;const _0x287465=_0x581f56['D_foundation'],_0x1be398=_0x581f56['GWT_depth'],_0x58fbf7=_0x581f56['gamma_above'],_0x5f27ad=_0x581f56[_0x171fad(0x136)];_0x1be398===-0x1||_0x1be398>=_0x287465?_0x41ee6f=_0x58fbf7*_0x287465:_0x41ee6f=_0x1be398*_0x58fbf7+(_0x287465-_0x1be398)*(_0x58fbf7-GAMMA_WATER);_0x41ee6f=Math[_0x171fad(0x14f)](0x0,_0x41ee6f);let _0xc17872;if(_0x1be398===-0x1||_0x1be398>=_0x287465+_0x530327)_0xc17872=_0x5f27ad;else{if(_0x1be398<=_0x287465)_0xc17872=_0x5f27ad-GAMMA_WATER;else{const _0x33e81a=_0x287465+_0x530327-_0x1be398,_0x1a7111=_0x5f27ad-GAMMA_WATER;_0xc17872=((_0x530327-_0x33e81a)*_0x5f27ad+_0x33e81a*_0x1a7111)/_0x530327;}}_0xc17872=Math[_0x171fad(0x14f)](0x0,_0xc17872);const _0x5b785a=_0x581f56['c']*_0x11d90e*_0x5245c1*_0x39d6e9*_0x10f9ef*_0x16561e['Fcc']+_0x41ee6f*_0x5a406b*_0x390e87*_0x227fb0*_0x45049d*_0x16561e[_0x171fad(0x197)]+0.5*_0xc17872*_0x530327*_0x253b72*_0x865427*_0x302fbf*_0x11c86e*_0x16561e[_0x171fad(0x157)],_0x380914=_0x5b785a*_0x413a3e,_0x774f25=_0x5b785a/SAFETY_FACTOR,_0x21c371=_0x581f56[_0x171fad(0x1b2)]<=_0x774f25?'SAFE':_0x171fad(0x13d);displayResults({..._0x581f56,'B_prime':_0x530327,'L_prime':_0x5c116c,'A_prime':_0x413a3e,..._0x16561e,'Nc':_0x11d90e,'Nq':_0x5a406b,'Ngamma':_0x253b72,'Fcs':_0x5245c1,'Fqs':_0x390e87,'F_gamma_s':_0x865427,'Fcd':_0x39d6e9,'Fqd':_0x227fb0,'F_gamma_d':_0x302fbf,'Fci':_0x10f9ef,'Fqi':_0x45049d,'F_gamma_i':_0x11c86e,'q_ultimate':_0x5b785a,'Q_ultimate':_0x380914,'q_allowable':_0x774f25,'safetyStatus':_0x21c371});}catch(_0x1c02c3){resultsArea[_0x171fad(0x193)]=_0x171fad(0x145)+_0x1c02c3[_0x171fad(0x177)]+_0x171fad(0x1a0),resultsArea['style'][_0x171fad(0x1aa)]=_0x171fad(0x192),printReportBtn[_0x171fad(0x12b)]['display']=_0x171fad(0x17d);}}function displayResults(_0x3b1778){const _0x3634f5=_0x2560c3;let _0x60e25e=0x1;const _0x1017d8=(_0x33eba5,_0x1e1b8b)=>_0x3634f5(0x137)+_0x60e25e++ +'.\x20'+_0x33eba5+_0x3634f5(0x158)+_0x1e1b8b+_0x3634f5(0x1a0),_0x1da0fd=(_0x4435d6,_0x17376e)=>{const _0x57751f=_0x3634f5;let _0x10ccc8=_0x57751f(0x182)+_0x4435d6[_0x57751f(0x125)](_0x381a33=>_0x57751f(0x1b5)+_0x381a33+_0x57751f(0x17b))['join']('')+_0x57751f(0x195),_0x1642e7='<tbody>'+_0x17376e[_0x57751f(0x125)](_0x8f4ff0=>_0x57751f(0x1a1)+_0x8f4ff0[_0x57751f(0x125)](_0x289bdb=>_0x57751f(0x116)+_0x289bdb+_0x57751f(0x133))[_0x57751f(0x18d)]('')+'</tr>')['join']('')+'</tbody>';return'<table\x20class=\x22results-table\x22>'+_0x10ccc8+_0x1642e7+'</table>';},_0x2b55f5=_0x3a12bd=>{const _0x5072b0=_0x3634f5;let _0x15c0a0=_0x5072b0(0x144)+_0x3a12bd[_0x5072b0(0x125)](_0x1f7d83=>'<tr><td\x20class=\x22label\x22>'+_0x1f7d83[0x0]+'</td><td>'+_0x1f7d83[0x1]+_0x5072b0(0x18f)+_0x1f7d83[0x2]+_0x5072b0(0x18e))['join']('')+_0x5072b0(0x12c);return'<table\x20class=\x22results-table\x22><thead><tr><th>Parameter</th><th>Value</th><th>Unit</th></tr></thead>'+_0x15c0a0+_0x5072b0(0x168);};let _0x4b8e97=_0x3634f5(0x16b);_0x4b8e97+=_0x1017d8(_0x3634f5(0x199),_0x1da0fd(['N<sub>c</sub>','N<sub>q</sub>',_0x3634f5(0x1b4)],[[_0x3b1778['Nc']['toFixed'](0x2),_0x3b1778['Nq'][_0x3634f5(0x14b)](0x2),_0x3b1778[_0x3634f5(0x153)][_0x3634f5(0x14b)](0x2)]])),_0x4b8e97+=_0x1017d8(_0x3634f5(0x17e),_0x1da0fd(['Factor\x20for',_0x3634f5(0x123),_0x3634f5(0x15b)],[[_0x3634f5(0x178),_0x3b1778[_0x3634f5(0x17a)]['toFixed'](0x3),_0x3b1778['Fcd'][_0x3634f5(0x14b)](0x3)],[_0x3634f5(0x13f),_0x3b1778['Fqs'][_0x3634f5(0x14b)](0x3),_0x3b1778[_0x3634f5(0x135)]['toFixed'](0x3)],[_0x3634f5(0x1b3),_0x3b1778[_0x3634f5(0x1ae)][_0x3634f5(0x14b)](0x3),_0x3b1778[_0x3634f5(0x142)][_0x3634f5(0x14b)](0x3)]]));if(_0x3b1778['advancedLoading']){let _0x5395fa=_0x1da0fd([_0x3634f5(0x180),_0x3634f5(0x188)],[[_0x3634f5(0x178),_0x3b1778[_0x3634f5(0x171)][_0x3634f5(0x14b)](0x3)],[_0x3634f5(0x13f),_0x3b1778[_0x3634f5(0x11b)][_0x3634f5(0x14b)](0x3)],['<strong>γ</strong>',_0x3b1778['F_gamma_i'][_0x3634f5(0x14b)](0x3)]])+_0x3634f5(0x17c)+_0x1da0fd([_0x3634f5(0x19c),_0x3634f5(0x11f),'Effective\x20Area\x20A\x27\x20(m²)'],[[_0x3b1778[_0x3634f5(0x150)][_0x3634f5(0x14b)](0x2),_0x3b1778['L_prime'][_0x3634f5(0x14b)](0x2),_0x3b1778[_0x3634f5(0x128)][_0x3634f5(0x14b)](0x3)]]);_0x4b8e97+=_0x1017d8(_0x3634f5(0x176),_0x5395fa);}if(_0x3b1778[_0x3634f5(0x15d)]){let _0x5045c1='<div\x20class=\x22p-4\x20text-center\x20font-semibold\x20rounded-md\x20'+(_0x3b1778['Ir']>=_0x3b1778['Irc']?'bg-green-100\x20text-green-800':_0x3634f5(0x19f))+'\x22>'+_0x3b1778[_0x3634f5(0x134)]+_0x3634f5(0x1a0)+_0x1da0fd([_0x3634f5(0x131),_0x3634f5(0x1ad),_0x3634f5(0x152),_0x3634f5(0x126),_0x3634f5(0x13b),_0x3634f5(0x118)],[[_0x3b1778['Gs'][_0x3634f5(0x14b)](0x2),_0x3b1778['Ir'][_0x3634f5(0x14b)](0x2),_0x3b1778[_0x3634f5(0x12e)][_0x3634f5(0x14b)](0x2),_0x3b1778[_0x3634f5(0x1a7)][_0x3634f5(0x14b)](0x3),_0x3b1778[_0x3634f5(0x197)][_0x3634f5(0x14b)](0x3),_0x3b1778[_0x3634f5(0x157)][_0x3634f5(0x14b)](0x3)]]);_0x4b8e97+=_0x1017d8(_0x3634f5(0x1ac),_0x5045c1);}_0x4b8e97+=_0x1017d8(_0x3634f5(0x139),_0x2b55f5([[_0x3634f5(0x19a),_0x3b1778[_0x3634f5(0x146)][_0x3634f5(0x14b)](0x2),_0x3634f5(0x1b7)],[_0x3634f5(0x11c),_0x3b1778[_0x3634f5(0x161)]['toFixed'](0x2),'kN'],[_0x3634f5(0x11e),SAFETY_FACTOR,'-'],[_0x3634f5(0x16e),_0x3634f5(0x16c)+_0x3b1778[_0x3634f5(0x190)][_0x3634f5(0x14b)](0x2)+_0x3634f5(0x138),_0x3634f5(0x1b7)],[_0x3634f5(0x124),_0x3b1778['Q_applied'][_0x3634f5(0x14b)](0x2),_0x3634f5(0x1b7)],[_0x3634f5(0x19d),'<span\x20class=\x22'+(_0x3b1778['safetyStatus']===_0x3634f5(0x132)?'status-safe':_0x3634f5(0x18c))+_0x3634f5(0x165)+_0x3b1778['safetyStatus']+_0x3634f5(0x14d),'-']])),resultsArea[_0x3634f5(0x193)]=_0x4b8e97,resultsArea[_0x3634f5(0x12b)]['display']=_0x3634f5(0x192),printReportBtn[_0x3634f5(0x12b)][_0x3634f5(0x1aa)]=_0x3634f5(0x15f);}
+    </script>
+</body>
+</html>
